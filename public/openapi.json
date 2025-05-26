@@ -1,0 +1,245 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de Chatbots",
+    "description": "API para gerenciar e interagir com chatbots de IA",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Suporte",
+      "email": "suporte@exemplo.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://v0-teste-theta-liart.vercel.app",
+      "description": "Servidor de produção"
+    }
+  ],
+  "paths": {
+    "/api/chatbots": {
+      "get": {
+        "summary": "Lista todos os chatbots",
+        "description": "Retorna uma lista de todos os chatbots disponíveis",
+        "operationId": "listChatbots",
+        "tags": ["Chatbots"],
+        "responses": {
+          "200": {
+            "description": "Lista de chatbots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Chatbot"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "name": "Bot",
+                    "model": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                    "systemPrompt": "Você é um assistente útil e amigável."
+                  },
+                  {
+                    "id": "123e4567-e89b-12d3-a456-426614174001",
+                    "name": "Bia",
+                    "model": "llama-3.3-70b-versatile",
+                    "systemPrompt": "Você é uma assistente especializada em marketing digital."
+                  }
+                ]
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chatbots/{id}": {
+      "get": {
+        "summary": "Obtém um chatbot específico",
+        "description": "Retorna os detalhes de um chatbot específico pelo ID",
+        "operationId": "getChatbot",
+        "tags": ["Chatbots"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do chatbot",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes do chatbot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chatbot"
+                },
+                "example": {
+                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "name": "Bot",
+                  "model": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                  "systemPrompt": "Você é um assistente útil e amigável."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chatbot não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat/{id}/message": {
+      "post": {
+        "summary": "Envia uma mensagem para o chatbot",
+        "description": "Envia uma mensagem para o chatbot e recebe uma resposta em streaming",
+        "operationId": "sendMessage",
+        "tags": ["Chat"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID do chatbot",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Conteúdo da mensagem",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["content"],
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "Conteúdo da mensagem"
+                  }
+                }
+              },
+              "example": {
+                "content": "Olá, como posso ajudar você hoje?"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resposta do chatbot em streaming",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chatbot não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Chatbot": {
+        "type": "object",
+        "required": ["id", "name", "model"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID único do chatbot"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do chatbot"
+          },
+          "model": {
+            "type": "string",
+            "description": "Modelo de IA utilizado pelo chatbot"
+          },
+          "systemPrompt": {
+            "type": "string",
+            "description": "Prompt de sistema que define o comportamento do chatbot"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Mensagem de erro"
+          }
+        }
+      }
+    }
+  }
+}
